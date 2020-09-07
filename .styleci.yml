@@ -1,0 +1,8 @@
+preset: recommended
+
+enabled:
+  #- void_return
+  - phpdoc_add_missing_param_annotation
+
+disabled:
+- no_empty_phpdoc
