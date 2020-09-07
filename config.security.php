@@ -8,31 +8,31 @@
  * All Rights Reserved.
  ********************************************************************************/
 /**
- * Vtiger specific custom config startup for CSRF 
+ * Vtiger specific custom config startup for CSRF.
  */
-function csrf_startup(){
-    //Override the default expire time of token 
+function csrf_startup()
+{
+    //Override the default expire time of token
     $GLOBALS['csrf']['expires'] = 259200;
 
     /**if an ajax request initiated, then if php serves content with <html> tags
-     * as a response, then unnecessarily we are injecting csrf magic javascipt 
-     * in the response html at <head> and <body> using csrf_ob_handler(). 
+     * as a response, then unnecessarily we are injecting csrf magic javascipt
+     * in the response html at <head> and <body> using csrf_ob_handler().
      * So, to overwride above rewriting we need following config.
      */
-    if(isAjax()) {
+    if (isAjax()) {
         $GLOBALS['csrf']['frame-breaker'] = false;
         $GLOBALS['csrf']['rewrite-js'] = null;
     }
 }
 
-function isAjax() {
+function isAjax()
+{
     if (!empty($_SERVER['HTTP_X_PJAX']) && $_SERVER['HTTP_X_PJAX'] == true) {
         return true;
     } elseif (!empty($_SERVER['HTTP_X_REQUESTED_WITH'])) {
         return true;
     }
+
     return false;
 }
-
-
-?>

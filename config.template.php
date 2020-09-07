@@ -1,7 +1,7 @@
 <?php
 /*********************************************************************************
  * The contents of this file are subject to the SugarCRM Public License Version 1.1.2
- * ("License"); You may not use this file except in compliance with the 
+ * ("License"); You may not use this file except in compliance with the
  * License. You may obtain a copy of the License at http://www.sugarcrm.com/SPL
  * Software distributed under the License is distributed on an  "AS IS"  basis,
  * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License for
@@ -14,19 +14,18 @@
 ********************************************************************************/
 
 // Adjust error_reporting favourable to deployment.
-version_compare(PHP_VERSION, '5.5.0') <= 0 ? error_reporting(E_WARNING & ~E_NOTICE & ~E_DEPRECATED & E_ERROR) : error_reporting(E_WARNING & ~E_NOTICE & ~E_DEPRECATED  & E_ERROR & ~E_STRICT); // PRODUCTION
+version_compare(PHP_VERSION, '5.5.0') <= 0 ? error_reporting(E_WARNING & ~E_NOTICE & ~E_DEPRECATED & E_ERROR) : error_reporting(E_WARNING & ~E_NOTICE & ~E_DEPRECATED & E_ERROR & ~E_STRICT); // PRODUCTION
 //ini_set('display_errors','on'); version_compare(PHP_VERSION, '5.5.0') <= 0 ? error_reporting(E_WARNING & ~E_NOTICE & ~E_DEPRECATED) : error_reporting(E_ALL & ~E_NOTICE & ~E_DEPRECATED & ~E_STRICT);   // DEBUGGING
 //ini_set('display_errors','on'); error_reporting(E_ALL); // STRICT DEVELOPMENT
 
-
-include('vtigerversion.php');
+include 'vtigerversion.php';
 
 // more than 8MB memory needed for graphics
 // memory limit default value = 64M
-ini_set('memory_limit','512M');
+ini_set('memory_limit', '512M');
 
-// show or hide calendar, world clock, calculator, chat and CKEditor 
-// Do NOT remove the quotes if you set these to false! 
+// show or hide calendar, world clock, calculator, chat and CKEditor
+// Do NOT remove the quotes if you set these to false!
 $CALENDAR_DISPLAY = 'true';
 $USE_RTE = 'true';
 
@@ -100,18 +99,18 @@ $upload_dir = '_VT_UPLOADDIR_';
 
 // maximum file size for uploaded files in bytes also used when uploading import files
 // upload_maxsize default value = 3000000
-$upload_maxsize = 3145728;//3MB
+$upload_maxsize = 3145728; //3MB
 
 // flag to allow export functionality
-// 'all' to allow anyone to use exports 
-// 'admin' to only allow admins to export 
-// 'none' to block exports completely 
+// 'all' to allow anyone to use exports
+// 'admin' to only allow admins to export
+// 'none' to block exports completely
 // allow_exports default value = all
 $allow_exports = 'all';
 
 // files with one of these extensions will have '.txt' appended to their filename on upload
 // upload_badext default value = php, php3, php4, php5, pl, cgi, py, asp, cfm, js, vbs, html, htm
-$upload_badext = array('php', 'php3', 'php4', 'php5', 'pl', 'cgi', 'py', 'asp', 'cfm', 'js', 'vbs', 'html', 'htm', 'exe', 'bin', 'bat', 'sh', 'dll', 'phps', 'phtml', 'xhtml', 'rb', 'msi', 'jsp', 'shtml', 'sth', 'shtm');
+$upload_badext = ['php', 'php3', 'php4', 'php5', 'pl', 'cgi', 'py', 'asp', 'cfm', 'js', 'vbs', 'html', 'htm', 'exe', 'bin', 'bat', 'sh', 'dll', 'phps', 'phtml', 'xhtml', 'rb', 'msi', 'jsp', 'shtml', 'sth', 'shtm'];
 
 // list_max_entries_per_page default value = 20
 $list_max_entries_per_page = '20';
@@ -168,15 +167,14 @@ $php_max_execution_time = 0;
 $default_timezone = 'UTC';
 
 /** If timezone is configured, try to set it */
-if(isset($default_timezone) && function_exists('date_default_timezone_set')) {
-	@date_default_timezone_set($default_timezone);
+if (isset($default_timezone) && function_exists('date_default_timezone_set')) {
+    @date_default_timezone_set($default_timezone);
 }
 
-//Set the default layout 
+//Set the default layout
 $default_layout = 'v7';
 
 //Maximiun scheduled workflows default value set to 10
 $max_scheduled_workflows = 10;
 
 include_once 'config.security.php';
-?>
