@@ -5,4 +5,28 @@ enabled:
   - phpdoc_add_missing_param_annotation
 
 disabled:
-- no_empty_phpdoc
+  - no_empty_phpdoc
+
+finder:  
+  exclude:
+    - "cache"
+    - "cron"
+    #- "data"
+    - "include"
+    - "includes"
+    - "kcfinder"
+    - "languages"
+    - "layouts"
+    - "libraries"
+    - "license"
+    - "logs"
+    - "migrate"
+    - "modules"
+    - "packages"
+    - "pkg"
+    - "resources"
+    - "schema"
+    - "storage"
+    - "test"
+    - "user_privileges"
+    - "vtlib"
