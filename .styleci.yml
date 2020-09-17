@@ -8,7 +8,7 @@ disabled:
   - no_empty_phpdoc
 
 finder:  
-  exclude:
+  exclude:    
     - "cache"
     - "cron"
     #- "data"
@@ -29,4 +29,5 @@ finder:
     - "storage"
     - "test"
     - "user_privileges"
-    - "vtlib"
+    - "vtlib"    
+    - "PEAR.php"
