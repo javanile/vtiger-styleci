@@ -30,4 +30,5 @@ finder:
     - "test"
     - "user_privileges"
     - "vtlib"    
+  not-name:
     - "PEAR.php"
