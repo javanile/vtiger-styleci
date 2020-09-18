@@ -17,35 +17,41 @@
  * The configuration file for FHS system
  * is located at /etc/vtigercrm directory.
  */
-
-include('config.inc.php');
+include 'config.inc.php';
 
 $THIS_DIR = dirname(__FILE__);
 
 if (file_exists($THIS_DIR.'/config_override.php')) {
-	include_once $THIS_DIR.'/config_override.php';
+    include_once $THIS_DIR.'/config_override.php';
 }
 
-class VtigerConfig {
+class VtigerConfig
+{
+    public static function get($key, $defvalue = '')
+    {
+        if (self::has($key)) {
+            global ${$key};
 
-	static function get($key, $defvalue='') {
-		if (self::has($key)) {
-			global ${$key};
-			return ${$key};
-		}
-		return $defvalue;
-	}
+            return ${$key};
+        }
 
-	static function has($key) {
-		global ${$key};
-		return (isset(${$key}));
-	}
+        return $defvalue;
+    }
 
-	static function getOD($key, $defvalue='') {
-		return '';
-	}
+    public static function has($key)
+    {
+        global ${$key};
 
-	static function hasOD($key) {
-		return false;
-	}
+        return isset(${$key});
+    }
+
+    public static function getOD($key, $defvalue = '')
+    {
+        return '';
+    }
+
+    public static function hasOD($key)
+    {
+        return false;
+    }
 }

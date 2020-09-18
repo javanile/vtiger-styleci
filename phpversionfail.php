@@ -38,12 +38,12 @@
 		<td class="small" bgcolor="#FFFFFF" align=center>
 			PHP 5.2.x or above is required. Your current PHP version is
 			<?php
-				if(isset($serverPhpVersion)) {
-					echo $serverPhpVersion;
-				} else  {
-					echo '???';
-				}
-			?> <br/>
+                if (isset($serverPhpVersion)) {
+                    echo $serverPhpVersion;
+                } else {
+                    echo '???';
+                }
+            ?> <br/>
 			Kindly upgrade the PHP installation, and try again! <br/>
 		</td>
 	</tr>
