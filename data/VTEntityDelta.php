@@ -9,119 +9,129 @@
  ************************************************************************************/
 require_once 'include/events/VTEntityData.inc';
 
-class VTEntityDelta extends VTEventHandler {
-	private static $oldEntity;
-	private static $newEntity;
-	private static $entityDelta;
+class VTEntityDelta extends VTEventHandler
+{
+    private static $oldEntity;
+    private static $newEntity;
+    private static $entityDelta;
 
-	function  __construct() {
-		
-	}
+    public function __construct()
+    {
+    }
 
-	function handleEvent($eventName, $entityData) {
+    public function handleEvent($eventName, $entityData)
+    {
+        $adb = PearDatabase::getInstance();
+        $moduleName = $entityData->getModuleName();
+        $recordId = $entityData->getId();
 
-		$adb = PearDatabase::getInstance();
-		$moduleName = $entityData->getModuleName();
-		$recordId = $entityData->getId();
+        if ($eventName == 'vtiger.entity.beforesave') {
+            if (!empty($recordId)) {
+                $entityData = VTEntityData::fromEntityId($adb, $recordId, $moduleName);
+                if ($moduleName == 'HelpDesk') {
+                    $entityData->set('comments', getTicketComments($recordId));
+                } elseif ($moduleName == 'Invoice') {
+                    $entityData->set('invoicestatus', getInvoiceStatus($recordId));
+                }
+                self::$oldEntity[$moduleName][$recordId] = $entityData;
+            }
+        }
 
-		if($eventName == 'vtiger.entity.beforesave') {
-			if(!empty($recordId)) {
-				$entityData = VTEntityData::fromEntityId($adb, $recordId, $moduleName);
-				if($moduleName == 'HelpDesk') {
-					$entityData->set('comments', getTicketComments($recordId));
-				} elseif($moduleName == 'Invoice'){
-					$entityData->set('invoicestatus', getInvoiceStatus($recordId));
-				}
-				self::$oldEntity[$moduleName][$recordId] = $entityData;
-			}
-		}
+        if ($eventName == 'vtiger.entity.aftersave') {
+            $this->fetchEntity($moduleName, $recordId);
+            $this->computeDelta($moduleName, $recordId);
+        }
+    }
 
-		if($eventName == 'vtiger.entity.aftersave'){
-			$this->fetchEntity($moduleName, $recordId);
-			$this->computeDelta($moduleName, $recordId);
-		}
-	}
+    public function fetchEntity($moduleName, $recordId)
+    {
+        $adb = PearDatabase::getInstance();
+        $entityData = VTEntityData::fromEntityId($adb, $recordId, $moduleName);
+        if ($moduleName == 'HelpDesk') {
+            $entityData->set('comments', getTicketComments($recordId));
+        } elseif ($moduleName == 'Invoice') {
+            $entityData->set('invoicestatus', getInvoiceStatus($recordId));
+        }
+        self::$newEntity[$moduleName][$recordId] = $entityData;
+    }
 
-	function fetchEntity($moduleName, $recordId) {
-		$adb = PearDatabase::getInstance();
-		$entityData = VTEntityData::fromEntityId($adb, $recordId, $moduleName);
-		if($moduleName == 'HelpDesk') {
-			$entityData->set('comments', getTicketComments($recordId));
-		} elseif($moduleName == 'Invoice') {
-			$entityData->set('invoicestatus', getInvoiceStatus($recordId));
-		}
-		self::$newEntity[$moduleName][$recordId] = $entityData;
-	}
+    public function computeDelta($moduleName, $recordId)
+    {
+        $delta = [];
 
-	function computeDelta($moduleName, $recordId) {
+        $oldData = [];
+        if (!empty(self::$oldEntity[$moduleName][$recordId])) {
+            $oldEntity = self::$oldEntity[$moduleName][$recordId];
+            $oldData = $oldEntity->getData();
+        }
+        $newEntity = self::$newEntity[$moduleName][$recordId];
+        $newData = $newEntity->getData();
+        /** Detect field value changes **/
+        foreach ($newData as $fieldName => $fieldValue) {
+            $isModified = false;
+            if (empty($oldData[$fieldName])) {
+                if (!empty($newData[$fieldName])) {
+                    $isModified = true;
+                }
+            } elseif ($oldData[$fieldName] != $newData[$fieldName]) {
+                $isModified = true;
+            }
+            if ($isModified) {
+                $delta[$fieldName] = ['oldValue' => $oldData[$fieldName],
+                    'currentValue'               => $newData[$fieldName], ];
+            }
+        }
+        self::$entityDelta[$moduleName][$recordId] = $delta;
+    }
 
-		$delta = array();
+    public function getEntityDelta($moduleName, $recordId, $forceFetch = false)
+    {
+        if ($forceFetch) {
+            $this->fetchEntity($moduleName, $recordId);
+            $this->computeDelta($moduleName, $recordId);
+        }
 
-		$oldData = array();
-		if(!empty(self::$oldEntity[$moduleName][$recordId])) {
-			$oldEntity = self::$oldEntity[$moduleName][$recordId];
-			$oldData = $oldEntity->getData();
-		}
-		$newEntity = self::$newEntity[$moduleName][$recordId];
-		$newData = $newEntity->getData();
-		/** Detect field value changes **/
-		foreach($newData as $fieldName => $fieldValue) {
-			$isModified = false;
-			if(empty($oldData[$fieldName])) {
-				if(!empty($newData[$fieldName])) {
-					$isModified = true;
-				}
-			} elseif($oldData[$fieldName] != $newData[$fieldName]) {
-				$isModified = true;
-			}
-			if($isModified) {
-				$delta[$fieldName] = array('oldValue' => $oldData[$fieldName],
-										'currentValue' => $newData[$fieldName]);
-			}
-		}
-		self::$entityDelta[$moduleName][$recordId] = $delta;
-	}
+        return self::$entityDelta[$moduleName][$recordId];
+    }
 
-	function getEntityDelta($moduleName, $recordId, $forceFetch=false) {
-		if($forceFetch) {
-			$this->fetchEntity($moduleName, $recordId);
-			$this->computeDelta($moduleName, $recordId);
-		}
-		return self::$entityDelta[$moduleName][$recordId];
-	}
+    public function getOldValue($moduleName, $recordId, $fieldName)
+    {
+        $entityDelta = self::$entityDelta[$moduleName][$recordId];
 
-	function getOldValue($moduleName, $recordId, $fieldName) {
-		$entityDelta = self::$entityDelta[$moduleName][$recordId];
-		return $entityDelta[$fieldName]['oldValue'];
-	}
+        return $entityDelta[$fieldName]['oldValue'];
+    }
 
-	function getCurrentValue($moduleName, $recordId, $fieldName) {
-		$entityDelta = self::$entityDelta[$moduleName][$recordId];
-		return $entityDelta[$fieldName]['currentValue'];
-	}
+    public function getCurrentValue($moduleName, $recordId, $fieldName)
+    {
+        $entityDelta = self::$entityDelta[$moduleName][$recordId];
 
-	function getOldEntity($moduleName, $recordId) {
-		return self::$oldEntity[$moduleName][$recordId];
-	}
+        return $entityDelta[$fieldName]['currentValue'];
+    }
 
-	function getNewEntity($moduleName, $recordId) {
-		return self::$newEntity[$moduleName][$recordId];
-	}
-	
-	function hasChanged($moduleName, $recordId, $fieldName, $fieldValue = NULL) {
-		if(empty(self::$oldEntity[$moduleName][$recordId])) {
-			return false;
-		}
-		$fieldDelta = self::$entityDelta[$moduleName][$recordId][$fieldName];
-		if(is_array($fieldDelta)) {
-			$fieldDelta = array_map('decode_html', $fieldDelta);
-		}
-		$result = $fieldDelta['oldValue'] != $fieldDelta['currentValue'];
-		if ($fieldValue !== NULL) {
-			$result = $result && ($fieldDelta['currentValue'] === $fieldValue);
-		}
-		return $result;
-	}
+    public function getOldEntity($moduleName, $recordId)
+    {
+        return self::$oldEntity[$moduleName][$recordId];
+    }
 
+    public function getNewEntity($moduleName, $recordId)
+    {
+        return self::$newEntity[$moduleName][$recordId];
+    }
+
+    public function hasChanged($moduleName, $recordId, $fieldName, $fieldValue = null)
+    {
+        if (empty(self::$oldEntity[$moduleName][$recordId])) {
+            return false;
+        }
+        $fieldDelta = self::$entityDelta[$moduleName][$recordId][$fieldName];
+        if (is_array($fieldDelta)) {
+            $fieldDelta = array_map('decode_html', $fieldDelta);
+        }
+        $result = $fieldDelta['oldValue'] != $fieldDelta['currentValue'];
+        if ($fieldValue !== null) {
+            $result = $result && ($fieldDelta['currentValue'] === $fieldValue);
+        }
+
+        return $result;
+    }
 }
-?>

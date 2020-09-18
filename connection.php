@@ -17,4 +17,3 @@ $apache_bin = 'APACHEBIN';
 $apache_conf = 'APACHECONF';
 $apache_port = 'APACHEPORT';
 $apache_bundled = 'APACHEBUNDLED';
-?>
