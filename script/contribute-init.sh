@@ -10,3 +10,6 @@ git rm -rf . && true
 rm -r . && true
 git pull https://code.vtiger.com/vtiger/vtigercrm.git master -X theirs --no-edit --allow-unrelated-histories
 git push --set-upstream origin contribute
+
+cd ..
+rm -fr CLONE
