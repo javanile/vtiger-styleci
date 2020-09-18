@@ -32,3 +32,5 @@ finder:
     - "vtlib"    
   not-name:
     - "PEAR.php"
+    - "SendSupportNotification.php"
+    
